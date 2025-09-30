@@ -96,6 +96,111 @@ WHERE--este aplica una condicion de filtro a los resultados despues de que las t
 # Creacion del backend con NODE.JS Y EXPRESS
 -Usamos node.js por que es la herramienta que nos permite usar javascript para construir el servidor backend
 -Express.js es un framework el cual es usado como una capa en la que se construye sobre Node.js para simplificar y acelerar el desarrollo de nuestro servidor de una manera en la que nos brinda mas herramientas y convenciones ya echas para las rutas, ademas de gestion de solicitudes
--podemos realizar la creacion de un archivo .gitignore para proteger tanto como las variables de entorno y node_modules siendo un proyecto pequeño podemos usar solo esto en el gitignore
+-podemos realizar la creacion de un archivo .gitignore para proteger tanto como las variables de entorno y node_modules ya que es muy grande el archivo, siendo un proyecto pequeño podemos usar solo esto en el gitignore
 
--Despues de tener ya la carpeta del backend creada, vamos a inicializar el proyecto de Node.js y a crear el archivo package.json con el comando "npm init -y"s
+-Despues de tener ya la carpeta del backend creada, vamos a inicializar el proyecto de Node.js y a crear el archivo package.json con el comando "npm init -y" 
+-Siguiente se instalan las dependencias se necesita express para el servidor y vamos a manejar pg que es postgreSQL para la conexion con la base de datos esto lo hacemos con "npm install express pg", esto creara el archivo package-lock.json y añadira a pg en package.json
+-Ahora vamos a crear un archivo llamado index.js y es donde tendremos el codigo base para iniciar el servidor express
+-para probar el servidor podemos ejecutar en la terminal node index.js y asi ver la respuesta de la conexion que tenemos el codigo en index.js y se vera en la ruta "http://localhost:3000"
+con este codigo podremos visualizar que este corriendo en la ruta 
+// Importamos Express
+const express = require('express');
+const app = express();
+const PORT = 3000; // El puerto en el que correrá nuestro servidor
+
+// Middleware para que Express pueda leer JSON en las peticiones
+app.use(express.json());
+// RUTA DE PRUEBA
+app.get('/', (req, res) => {
+    res.send('Servidor de la Librería funcionando con Express.');
+});
+// INICIAR EL SERVIDOR
+app.listen(PORT, () => {
+    console.log(`Servidor Express corriendo en el puerto ${PORT}`);
+    console.log(`Accede a: http://localhost:${PORT}`);
+});
+
+-Siguiente vamos a configurar la conexion a nuestra base de datos postgreSQL y crear la primera funcion para poder obtener los datos
+-en la parte superior del archivo index.js despues de importar express vamos a iumportar y configurar el cliente de pg ...
+// Importamos Express
+const express = require('express');
+const app = express();
+const PORT = 3000;
+
+// Importamos el cliente de PostgreSQL
+const { Client } = require('pg');
+
+// 2. CONFIGURACIÓN DE LA CONEXIÓN A POSTGRESQL
+const dbConfig = {
+    user: 'tu_usuario_postgres',       // ⬅️ CAMBIA ESTO
+    host: 'localhost',                 // O la dirección de tu servidor DB
+    database: 'libreria_db',           // ⬅️ CAMBIA ESTO (el nombre de tu BD)
+    password: 'tu_contraseña_secreta', // ⬅️ CAMBIA ESTO
+    port: 5432,                        // Puerto por defecto de PostgreSQL
+};
+
+// Función para conectar el cliente
+const client = new Client(dbConfig);
+
+// Intentamos conectar el cliente a la BD
+client.connect()
+    .then(() => {
+        console.log('✅ Conexión exitosa a PostgreSQL.');
+    })
+    .catch(err => {
+        console.error('❌ Error de conexión a PostgreSQL:', err.stack);
+    });
+
+// Middleware para que Express pueda leer JSON en las peticiones
+app.use(express.json());
+
+// ... (El resto del código se mantiene igual por ahora) ...
+
+-Ahora vamos a crear la ruta para leer o obtener GET los libros de la base de datos
+se crea una ruta get que ejecute una consulta sql para obtener todos los libros de la tabla y los devuelva como una respuesta json, esto con este codigo dentro de index.js antes de la linea de app.listen
+
+app.get('/libros', async (req, res) => {
+    try {
+        // Consulta SQL para obtener todos los registros de la tabla 'libros'
+        const result = await client.query('SELECT * FROM libros ORDER BY titulo ASC');
+        
+        // Enviamos la respuesta con los datos obtenidos
+        res.json({ 
+            message: 'Lista de libros obtenida con éxito',
+            data: result.rows 
+        });
+
+    } catch (err) {
+        console.error('Error al ejecutar la consulta:', err);
+        // Enviamos un error 500 (Internal Server Error)
+        res.status(500).json({ error: 'Error interno del servidor al obtener libros' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor Express corriendo en el puerto ${PORT}`);
+    console.log(`Accede a: http://localhost:${PORT}`);
+});
+
+* en resumen el proceso que se realiza es de esta manera
+
+1-Un usuario abre http://localhost:3000/libros en el navegador.
+
+2-Express (app.get) detecta la solicitud /libros y comienza a ejecutar el código dentro del try...catch.
+
+3-El código llama a client.query('SELECT * FROM libros').
+
+4-El módulo pg (el cliente) toma ese comando SQL y lo envía a través de la red al servidor de PostgreSQL.
+
+5-El servidor de PostgreSQL ejecuta el SQL, obtiene los resultados.
+
+6-El módulo pg recibe los resultados y los formatea como objetos JavaScript (en result.rows).
+
+7-El código usa Express (res.json(...)) para tomar esos datos y enviarlos de vuelta al navegador como una respuesta HTTP.
+
+Conclusión:
+
+Herramienta	--- Función
+Express	--- Maneja la solicitud web (GET, POST) y las rutas.
+Módulo pg --- Habla con la base de datos y ejecuta el SQL.
+PostgreSQL --- Almacena, procesa y devuelve los datos.
