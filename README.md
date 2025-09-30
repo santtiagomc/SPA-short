@@ -91,5 +91,11 @@ WHERE--este aplica una condicion de filtro a los resultados despues de que las t
 -este comando "git remote add origin https://github.com/tu-usuario/tu-repositorio.git" para enlazar el repositorio remoto con el repositorio local
 -para finalizar probamos el envio de archivos que ya estan creados desde el local y el remoto, usamos "git add ." despues "git commit -am"primer commit desde local"" y por ultimo "git push origin main" para enviar los archivos desde el local al repositorio y verificar que el envio de archivos se estan realizando  
 
+* Ahora que ya contamos con la  base de datos y la union con el repositorio remoto en github podemos seguir con la creacion del backend
 
-# 
+# Creacion del backend con NODE.JS Y EXPRESS
+-Usamos node.js por que es la herramienta que nos permite usar javascript para construir el servidor backend
+-Express.js es un framework el cual es usado como una capa en la que se construye sobre Node.js para simplificar y acelerar el desarrollo de nuestro servidor de una manera en la que nos brinda mas herramientas y convenciones ya echas para las rutas, ademas de gestion de solicitudes
+-podemos realizar la creacion de un archivo .gitignore para proteger tanto como las variables de entorno y node_modules siendo un proyecto pequeño podemos usar solo esto en el gitignore
+
+-Despues de tener ya la carpeta del backend creada, vamos a inicializar el proyecto de Node.js y a crear el archivo package.json con el comando "npm init -y"
